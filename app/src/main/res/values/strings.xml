@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">KotlinHomeWork5_2_1</string>
+    <string name="null_massenge">Пустой пост</string>
+    <string name="text_reklama">Реклама</string>
+    <string name="text_null" />
+    <string name="text_repost">Repost</string>
+    <string name="text_video">Video</string>
+</resources>

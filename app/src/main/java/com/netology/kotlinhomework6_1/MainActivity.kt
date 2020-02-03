@@ -15,6 +15,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         // Пост для имитации репоста
+        // Версия загрузки с сервера
         var post = Post(
             0,
             "Джонатон Уэйн",

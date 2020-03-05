@@ -1,21 +1,29 @@
 package com.netology.kotlinhomework6_1
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import kotlinx.android.synthetic.main.activity_main.*
 import com.netology.kotlinhomework6_1.PostTemplate.Post
-import com.netology.kotlinhomework6_1.PostTemplate.PostType
+import io.ktor.client.HttpClient
+import io.ktor.client.features.json.GsonSerializer
+import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.request.get
+import io.ktor.http.ContentType
+import io.ktor.util.KtorExperimentalAPI
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.*
 
+// Адрес базы постов
+const val postsUrl = "https://raw.githubusercontent.com/zlayada/KotlinHomeWork6_1/master/app/src/main/java/com/netology/kotlinhomework6_1/JsonDate/posts.json"
 
-class MainActivity : AppCompatActivity() {
+@KtorExperimentalAPI
+class MainActivity : AppCompatActivity(), CoroutineScope by MainScope(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Пост для имитации репоста
-        // Версия загрузки с сервера
+       /* // Пост для имитации репоста
         var post = Post(
             0,
             "Джонатон Уэйн",
@@ -108,12 +116,57 @@ class MainActivity : AppCompatActivity() {
                 coordinates_lng = 2.17403
             )
 
-        )
+        )*/
 
+        loadingDataPost()
+
+
+        /*// Вывод в ленту базы постов
         with(container) {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = PostAdapter(list)
-        }
+        }*/
     }
+
+    // Загрузка базы постов по ссылке на GitHub
+    private fun loadingDataPost() = launch {
+
+        // Включение прогрессбара
+        loadingProgressBar.visibility = View.VISIBLE
+
+        val postList : MutableList<Post> = withContext(Dispatchers.IO) {
+            val client = HttpClient {
+                install(JsonFeature) {
+                    acceptContentTypes = listOf(
+                        ContentType.Text.Plain,
+                        ContentType.Application.Json
+                    )
+                    serializer = GsonSerializer() {
+
+                    }
+                }
+            }
+            client.get<List<Post>>(postsUrl)
+        }.toMutableList()
+
+        // Вывод в ленту базы постов
+        with(container) {
+            layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this@MainActivity)
+            adapter = PostAdapter(postList)
+        }
+
+        // Выключение прогрессбара
+        loadingProgressBar.visibility = View.GONE
+
+    }
+
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cancel()
+    }
+
+
 
 }
